@@ -1,7 +1,13 @@
-import express, { type Request, type Response } from "express";
-const app = express();
-const port = 3000;
+import express, {
+  type Application,
+  type Request,
+  type Response,
+} from "express";
+import { authRoute } from "./modules/auth/auth.route";
+
+const app: Application = express();
 app.use(express.json());
+app.use("/api/auth/signup", authRoute);
 
 app.get("/", (req: Request, res: Response) => {
   res.send({
