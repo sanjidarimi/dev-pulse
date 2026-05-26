@@ -18,7 +18,7 @@ export const sendErrorResponse = <T>(
   message: string,
   statusCode: number,
   error?: T,
-) => {
+) :Response => {
   return res.status(statusCode).json({
     message,
     success: false,
