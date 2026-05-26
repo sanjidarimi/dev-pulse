@@ -1,8 +1,11 @@
 import { Pool } from "pg";
 import { config } from "../config";
+
 export const pool = new Pool({
   connectionString: config.connection_string,
-
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 export const initDB = async () => {
@@ -15,7 +18,6 @@ export const initDB = async () => {
         email VARCHAR(100) UNIQUE NOT NULL, 
         password TEXT NOT NULL,
         role TEXT NOT NULL DEFAULT 'contributor',
-        CHECK (role IN ("contributor"|"maintainer")),
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
         )
