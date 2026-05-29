@@ -15,10 +15,11 @@ export const sendSuccessResponse = <T>(
 
 export const sendErrorResponse = <T>(
   res: Response,
-  message: string,
   statusCode: number,
+  message: string,
+
   error?: T,
-) :Response => {
+): Response => {
   return res.status(statusCode).json({
     message,
     success: false,

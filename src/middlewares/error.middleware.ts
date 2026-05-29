@@ -13,4 +13,5 @@ export const globalErrorHandler = (
   const statusCode = err.statusCode || 500;
   const message = err.message || "internal server error";
 
-sendErrorResponse(res, message, statusCode, err.error);};
+  sendErrorResponse(res, statusCode, message, err.error);
+};
