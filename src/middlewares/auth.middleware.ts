@@ -16,7 +16,7 @@ declare global {
     }
   }
 }
-const protect = (req: Request, res: Response, next: NextFunction): void => {
+export const protect = (req: Request, res: Response, next: NextFunction): void => {
   const token = req.headers.authorization;
   if (!token) {
     sendErrorResponse(res, 401, "unauthorized", "missing token");
