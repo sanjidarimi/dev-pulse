@@ -2,8 +2,12 @@ export interface IUser {
   id: number;
   name: string;
   email: string;
-  password: string;
-  role: string;
-  created_at: string;
-  updated_at: string;
+  password?: string;
+  role: "contributor" |"maintainor";
+  created_at: Date;
+  updated_at: Date;
+}
+export interface ISigninResponse{
+  token : string,
+  user : Omit<IUser,'password'>
 }

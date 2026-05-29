@@ -1,18 +1,17 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
+import { sendSuccessResponse } from "../../utils/Response";
 import { authService } from "./auth.service";
 
-const createUser = async (req: Request, res: Response) => {
+const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     const result = await authService.createUserIntoDB(req.body);
-    res.status(201).json({
-      massage: "users created successfully",
-      data: result.rows[0],
-    });
+    sendSuccessResponse(res, 201, "user registed successfully", result);
   } catch (error) {
-    res.status(500).json({
-      massage: "users existed",
-      error:error
-    });
+    next(error);
   }
 };
 export const authController = {
