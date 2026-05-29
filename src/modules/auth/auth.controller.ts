@@ -14,6 +14,19 @@ const createUser = async (
     next(error);
   }
 };
+const getUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const result = await authService.getUserIntoDB(req.body);
+    sendSuccessResponse(res, 200, "login successfully", result);
+  } catch (error) {
+    next(error);
+  }
+};
 export const authController = {
   createUser,
+  getUser,
 };

@@ -1,21 +1,8 @@
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { config } from "../../config";
 import { pool } from "../../db";
-import type { IUser } from "./auth.interface";
-
-// const createUserIntoDB = async (payload: any) => {
-//   const { name, email, password, role } = payload;
-//   const hashpassword = await bcrypt.hash(password, 10);
-//   const result = await pool.query(
-//     `
-//     INSERT INTO users(name,email,password,role) VALUES($1,$2,$3,$4)
-//     RETURNING *
-//     `,
-//     [name, email, hashpassword, role],
-//   );
-//   delete result.rows[0].password;
-//   return result;
-// };
-
+import type { ILoginResponse, IUser } from "./auth.interface";
 const createUserIntoDB = async (
   payload: Partial<IUser>,
 ): Promise<Omit<IUser, "password">> => {
@@ -48,7 +35,33 @@ const createUserIntoDB = async (
 
   return result.rows[0];
 };
+const getUserIntoDB = async (
+  payload: Pick<IUser, "email" | "password">,
+): Promise<ILoginResponse> => {
+  const { email, password } = payload;
+  const query = `SELECT * FROM users WHERE email = $1`;
+  const result = await pool.query(query, [email]);
+  const user = result.rows[0];
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+  const isPasswordMatch = await bcrypt.compare(
+    password as string,
+    user.password,
+  );
+  if (!isPasswordMatch) {
+    throw new Error("Invalid credentials");
+  }
+  const token = jwt.sign(
+    { id: user.id, name: user.name, role: user.role },
+    config.jwt_secret,
+    { expiresIn: "1d" },
+  );
+  const { password: _,...userWithoutPassword } = user;
+  return { token, user: userWithoutPassword };
+};
 
 export const authService = {
   createUserIntoDB,
+  getUserIntoDB,
 };

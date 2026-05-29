@@ -7,7 +7,7 @@ export interface IUser {
   created_at: Date;
   updated_at: Date;
 }
-export interface ISigninResponse{
+export interface ILoginResponse{
   token : string,
   user : Omit<IUser,'password'>
 }

@@ -8,7 +8,7 @@ import { authRoute } from "./modules/auth/auth.route";
 const app: Application = express();
 app.use(express.json());
 app.use("/api/auth/signup", authRoute);
-
+app.use("/api/auth/login",authRoute)
 app.get("/", (req: Request, res: Response) => {
   res.send({
     author: "dev pulse",
