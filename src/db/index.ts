@@ -16,7 +16,7 @@ email VARCHAR(200) UNIQUE NOT NULL,
 password VARCHAR(250) NOT NULL,
 role VARCHAR(50) DEFAULT 'contributor' CHECK (role IN ('contributor', 'maintainer')),
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-undated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 `;
 const createIssuesTable = `
@@ -33,7 +33,7 @@ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 `;
 export const initDB = async (): Promise<void> => {
   try {
-    await pool.query(createIssuesTable);
+    await pool.query(createUserTable);
     await pool.query(createIssuesTable);
     console.log("Database tables checked/created successfully.");
   } catch (error) {
