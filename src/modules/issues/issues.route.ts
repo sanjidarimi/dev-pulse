@@ -3,9 +3,10 @@ import { protect, restrictTo } from "../../middlewares/auth.middleware";
 import { issuesController } from "./issues.controller";
 
 const router = Router();
+
 router.post("/", protect, issuesController.createIssue);
 router.get("/", issuesController.getAllIssues);
-router.get("/", issuesController.getSingleIssue);
+router.get("/:id", issuesController.getSingleIssue);
 router.patch("/:id", protect, issuesController.updateIssue);
 router.delete(
   "/:id",
@@ -13,4 +14,5 @@ router.delete(
   restrictTo("maintainer"),
   issuesController.deleteIssue,
 );
+
 export const IssuesRoute = router;

@@ -2,19 +2,26 @@ import { pool } from "../../db";
 import type { IAuthUser } from "../../middlewares/auth.middleware";
 import type { IIssue, IIssueWithReporter } from "./issues.interface";
 
+
+const createCustomError = (message: string, statusCode: number) => {
+  const error: any = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+};
+
 const createIssueIntoDB = async (
   payload: Partial<IIssue>,
   reporterId: number,
 ): Promise<IIssue> => {
   const { title, description, type } = payload;
   if (!title || title.length > 150) {
-    throw new Error("Title is required and max 150 characters");
+    throw createCustomError("Title is required and max 150 characters", 400);
   }
   if (!description || description.length < 20) {
-    throw new Error("Description is required and min 20 characters");
+    throw createCustomError("Description is required and min 20 characters", 400);
   }
   if (!type || !["bug", "feature_request"].includes(type)) {
-    throw new Error("Invalid type");
+    throw createCustomError("Invalid type", 400);
   }
 
   const query = `
@@ -22,14 +29,10 @@ const createIssueIntoDB = async (
       VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
-  const result = await pool.query(query, [
-    title,
-    description,
-    type,
-    reporterId,
-  ]);
+  const result = await pool.query(query, [title, description, type, reporterId]);
   return result.rows[0];
 };
+
 const getAllIssues = async (filters: {
   sort?: string;
   type?: string;
@@ -76,15 +79,15 @@ const getAllIssues = async (filters: {
     return { ...issueData, reporter };
   });
 };
+
 const getSingleIssue = async (id: number): Promise<IIssueWithReporter> => {
-  const issueResult = await pool.query("SELECT * FROM issues WHERE id = $1", [
-    id,
-  ]);
+  const issueResult = await pool.query("SELECT * FROM issues WHERE id = $1", [id]);
   const issue = issueResult.rows[0];
 
   if (!issue) {
-    throw new Error("Issue not found");
+    throw createCustomError("Issue not found", 404); 
   }
+  
   const userResult = await pool.query(
     "SELECT id, name, role FROM users WHERE id = $1",
     [issue.reporter_id],
@@ -111,26 +114,27 @@ const updateIssus = async (
   const currentIssue = currentIssueResult.rows[0];
 
   if (!currentIssue) {
-    throw new Error("Issue not found");
+    throw createCustomError("Issue not found", 404); 
   }
 
-  // Role dynamic validation logic
   if (user.role === "contributor") {
     if (currentIssue.reporter_id !== user.id) {
-      throw new Error("You can only update your own issues");
+      throw createCustomError("You can only update your own issues", 403); 
     }
     if (currentIssue.status !== "open") {
-      throw new Error("Contributors can only edit issues with open status");
+      throw createCustomError("Contributors can only edit issues with open status", 409); 
     }
   }
 
   const title = payload.title || currentIssue.title;
   const description = payload.description || currentIssue.description;
   const type = payload.type || currentIssue.type;
-  const status =
-    user.role === "maintainer" && payload.status
-      ? payload.status
-      : currentIssue.status;
+  
+  if (payload.status && payload.status !== currentIssue.status && user.role !== "maintainer") {
+    throw createCustomError("Only maintainers can change issue status workflow", 403);
+  }
+
+  const status = user.role === "maintainer" && payload.status ? payload.status : currentIssue.status;
 
   const query = `
       UPDATE issues 
@@ -138,22 +142,14 @@ const updateIssus = async (
       WHERE id = $5
       RETURNING *
     `;
-  const result = await pool.query(query, [
-    title,
-    description,
-    type,
-    status,
-    id,
-  ]);
+  const result = await pool.query(query, [title, description, type, status, id]);
   return result.rows[0];
 };
 
 const deleteIssues = async (id: number): Promise<void> => {
-  const checkResult = await pool.query("SELECT id FROM issues WHERE id = $1", [
-    id,
-  ]);
+  const checkResult = await pool.query("SELECT id FROM issues WHERE id = $1", [id]);
   if (checkResult.rows.length === 0) {
-    throw new Error("Issue not found");
+    throw createCustomError("Issue not found", 404); 
   }
   await pool.query("DELETE FROM issues WHERE id = $1", [id]);
 };

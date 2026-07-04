@@ -72,7 +72,8 @@ const deleteIssue = async (
   try {
     const id = Number(req.params.id);
     await issuesService.deleteIssues(id);
-    sendSuccessResponse(res, 200, "Issue deleted successfully", id);
+
+    sendSuccessResponse(res, 200, "Issue deleted successfully");
   } catch (error) {
     next(error);
   }

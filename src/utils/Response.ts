@@ -4,7 +4,7 @@ export const sendSuccessResponse = <T>(
   res: Response,
   statusCode: number,
   message: string,
-  data: T,
+  data?: T,
 ): Response => {
   return res.status(statusCode).json({
     success: true,
