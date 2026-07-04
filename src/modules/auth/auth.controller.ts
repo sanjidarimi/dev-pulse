@@ -24,6 +24,7 @@ const getUser = async (
     next(error);
   }
 };
+
 export const authController = {
   createUser,
   getUser,
